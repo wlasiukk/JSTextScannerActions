@@ -1,0 +1,118 @@
+class TextScannerActions {
+    constructor(map) {
+        this.textActionsVar = "";
+        this.startWithMatched = false;
+        this.textActionsMap = map;
+
+        window.addEventListener('keypress', (e) => {
+            console.log("key : " + e.key)
+            this.appendCharacter(e.key);
+        });
+    }
+
+    elementExists(selector) {
+        if (!selector) {
+            return undefined;
+        }
+        try {
+            return document.querySelector(selector);
+        } catch (e) {
+            console.error("Error checking element existence:", e);
+            return undefined;
+        }
+    }
+
+    appendCharacter(c) {
+        this.startWithMatched = false;
+        this.textActionsVar = this.textActionsVar + c;
+        /*
+        switch (c) {
+            case 8: // Backspace
+                this.textActionsVar = this.textActionsVar.slice(0, -1);
+                break;
+            default:
+                this.textActionsVar = this.textActionsVar + String.fromCharCode(c);
+        }*/
+        for (var i = 0; i < this.textActionsMap.length; i++) {
+            let searchedText = this.textActionsMap[i].typed_text;
+            let dynamic_target = undefined;
+
+            if (this.textActionsMap[i].typed_text.startsWith("exists:")
+                && this.elementExists(this.textActionsMap[i].typed_text.slice(7).replace("{{TYPED_TEXT}}", CSS.escape(this.textActionsVar)))) {
+                searchedText = this.textActionsVar; // we found an element that exists, we have match !
+                dynamic_target = this.textActionsMap[i].typed_text.slice(7).replace("{{TYPED_TEXT}}", CSS.escape(this.textActionsVar));
+            }
+
+            if (searchedText === this.textActionsVar) {
+                // Execute the associated actions
+                this.textActionsMap[i].actions.forEach((action_i) => {
+                    let action = structuredClone(action_i); // Clone the action to avoid modifying the original
+                    if (dynamic_target) {
+                        action.target = dynamic_target; // Use the dynamic target if available  
+                    }
+
+                    if (action.type === "click") {
+                        var target = this.elementExists(action.target);
+                        if (target) {
+                            target.click();
+                        }
+                    } else if (action.type === "set_text") {
+                        var target = this.elementExists(action.target);
+                        if (target) {
+                            if (action.text.startsWith("{{") && action.text.endsWith("}}")) {
+                                // If the text is a variable, we evaluate it
+                                var evalScript = action.text.slice(2, -2).trim();
+                                try {
+                                    var result = eval(evalScript);
+                                    if (result !== undefined) {
+                                        target.value = result;
+                                    } else {
+                                        console.warn("set_text: eval result is not defined, scritpt: " + evalScript);
+                                    }
+                                } catch (e) {
+                                    console.error("set_text: Error evaluating script: " + evalScript, e);
+                                }
+
+                            }
+                            else {
+                                target.value = action.text;
+                            }
+                        }
+                    } else if (action.type === "execute_js") {
+                        var target = this.elementExists(action.target);
+                        var evalScript = action.text
+                        try {
+                            var result = eval(evalScript);
+                        } catch (e) {
+                            console.error("execute_js: rror evaluating script: " + evalScript, e);
+                        }
+                    } else if (action.type === "trigger_change_event") {
+                        var target = this.elementExists(action.target);
+                        if (target) {
+                            var event = new Event('change', { bubbles: true });
+                            if (action.text) {
+                                target.value = action.text;
+                            }
+                            target.dispatchEvent(event);
+                        }
+                    }
+                });
+            } else if (this.textActionsMap[i].typed_text.startsWith(this.textActionsVar) && this.textActionsVar.length > 0) {
+                // If the current input matches the start of a typed_text, we keep it
+                // for further actions.
+                this.startWithMatched = true;
+            } else if (this.textActionsMap[i].typed_text.startsWith("exists:")
+                && this.textActionsMap[i].dont_clear_condition_when_exists
+                && this.elementExists(this.textActionsMap[i].dont_clear_condition_when_exists.replace("{{TYPED_TEXT}}", CSS.escape(this.textActionsVar)))) {
+                // If the current input matches the start of a typed_text, we keep it
+                // for further actions.
+                this.startWithMatched = true;
+            }
+        }
+        if (!this.startWithMatched) {
+            // prevent further actions if no match
+            this.textActionsVar = "";
+        }
+        console.log("Current textActionsVar: " + this.textActionsVar);
+    }
+}
