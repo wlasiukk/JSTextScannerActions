@@ -1,0 +1,74 @@
+
+var textActionsInstance = new TextActions([
+    {
+        "typed_text": "doit!",
+        "actions": [
+            {
+                "type": "set_text",
+                "target": "#P1_INPUT_TEXT",
+                "text": "{{ this.textActionsVar }}"
+            },
+            {
+                "type": "trigger_change_event",
+                "text": "do!",
+                "target": "#P1_INPUT_TEXT"
+            }
+        ]
+    }
+]);
+
+
+
+var textActionsInstance = new TextActions([
+    {
+        "typed_text": "doit!",
+        "actions": [
+            {
+                "type": "set_text",
+                "target": "#P1_INPUT_TEXT",
+                "text": "{{ this.textActionsVar }}"
+            },
+            {
+                "type": "click",
+                "target": "#OK_BUTTON"
+            }
+        ]
+    }
+]);
+
+
+var textActionsInstance = new TextActions([
+    {
+        "typed_text": "doit!",
+        "actions": [
+            {
+                "type": "execute_js",
+                "target": "#P1_INPUT_TEXT",
+                "text": "$s('P1_INPUT_TEXT', this.textActionsVar);"
+            }
+        ]
+    }
+]);
+
+
+
+var textActionsInstance = new TextActions([
+    {
+        "typed_text": "doit!",
+        "actions": [
+            {
+                "type": "click",
+                "target": "#OK_BUTTON"
+            }
+        ]
+    },
+    {
+        "typed_text": "exists:#main_report_ir button#PLMVS_BT_{{TYPED_TEXT}}",
+        "dont_clear_condition_when_exists": "#main_report_ir button[id^='PLMVS_BT_{{TYPED_TEXT}}']",
+        "actions": [
+            {
+                "type": "click"
+            }
+        ]
+    }
+]);
