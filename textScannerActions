@@ -53,7 +53,7 @@ class TextScannerActions {
 
                     if (action.type === "click") {
                         var target = this.elementExists(action.target);
-                        if (target) {
+                        if (target && target.checkVisibility()) {
                             target.click();
                         }
                     } else if (action.type === "set_text") {
